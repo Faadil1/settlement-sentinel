@@ -1,45 +1,64 @@
 # Settlement Sentinel
 
-A verifiable World Cup market resolution cockpit. Submits a disputed stat
-claim and runs it live through TxLINE's devnet API and Solana program,
-showing every pipeline stage honestly — including when the final proof
-check does not pass.
+> **TL;DR** — Settlement Sentinel verifies a World Cup stat claim against TxLINE's deployed Solana program via read-only Merkle proof simulation. It is not a betting product — no escrow, wagering, or fund movement occurs anywhere. The proof pipeline runs live in front of you and reports honestly.
 
-This is not a betting product. No escrow, wagering, or fund movement
-occurs anywhere in this codebase. `validate_stat` is called as a
-read-only simulated check only — never a broadcast transaction.
+---
 
-## Current evidence status (PARTIAL+)
+## What This Is
 
-Live-demonstrated in Google Cloud Shell against TxLINE devnet:
+A verifiable sports-data proof cockpit. Submits a disputed stat claim and
+runs it live through TxLINE's devnet API and Solana program, showing every
+pipeline stage honestly — including when the final proof check does not pass.
 
-- TxLINE devnet API reachable
-- Solana devnet RPC reachable
-- Throwaway devnet wallet funded and working
-- TxLINE guest JWT issuance
-- Free-tier devnet `subscribe` (on-chain, 0 TxL cost)
-- API token activation
-- Fixtures snapshot
-- Score snapshot
-- Stat-validation payload retrieval
-- `validate_stat` reaches the deployed devnet program (Instruction:
-  ValidateStat logged)
-- Program finds a valid on-chain root for the relevant interval
+**This is not a betting product.** No escrow, wagering, or fund movement
+occurs anywhere in this codebase. `validate_stat` is called as a read-only
+simulated check only — never a broadcast transaction.
 
-**Currently failing:** the final proof check returns Anchor custom error
-`6004 InvalidMainTreeProof` ("The summary does not belong to the
-on-chain root"). We have an open inquiry with TxLINE support requesting
-a known-good `validate_stat` example; root cause is not yet confirmed.
+## How It Works
+
+1. **Authenticate** — obtain a guest JWT from TxLINE and activate an API token
+2. **Load fixture** — fetch the World Cup match fixture from TxLINE
+3. **Score snapshot** — retrieve the current score data for the fixture
+4. **Proof payload** — request the stat-validation payload (Merkle proofs, roots, summaries)
+5. **On-chain simulation** — submit `validate_stat` to TxLINE's deployed Solana program via read-only `simulateTransaction`
+6. **Verify** — check the program's return value: `true` = Merkle proof validated against the on-chain root
+
+## Architecture
+
+```
+┌──────────────┐     ┌───────────────┐     ┌────────────────────┐     ┌───────────────────────────────────┐
+│  Browser UI  │────▶│  Express API  │────▶│ TxLINE Devnet API  │────▶│ Solana Program (read-only         │
+│  (React)     │◀────│  (Node.js)    │◀────│ (auth, fixtures,   │◀────│  simulation via simulateTransaction│
+│              │     │               │     │  scores, proofs)   │     │  on devnet)                       │
+└──────────────┘     └───────────────┘     └────────────────────┘     └───────────────────────────────────┘
+```
+
+## Current Evidence Status: VERIFIED ✓
+
+Live-demonstrated against TxLINE devnet (local and Cloud Run):
+
+| Stage | Status |
+|---|---|
+| TxLINE devnet API reachable | ✓ |
+| Solana devnet RPC reachable | ✓ |
+| Throwaway devnet wallet funded | ✓ |
+| TxLINE guest JWT issuance | ✓ |
+| Free-tier devnet `subscribe` (on-chain, 0 TxL cost) | ✓ |
+| API token activation | ✓ |
+| Fixtures snapshot | ✓ |
+| Score snapshot | ✓ |
+| Stat-validation payload retrieval | ✓ |
+| `validate_stat` reaches deployed devnet program | ✓ |
+| Program finds valid on-chain root for interval | ✓ |
+| **Merkle proof validated — predicate returned `true`** | **✓** |
+
+**Known verified claim:** fixtureId `17588309` (Egypt vs Iran), seq `1141`, statKey `1002`.
 
 Truthful proof statement used throughout this product:
 
-> "TxLINE proof payload retrieved and validated up to the deployed
-> Solana program/root check."
+> "TxLINE Merkle proof validated against the on-chain program/root."
 
-This becomes "TxLINE Merkle proof validated against the on-chain
-program/root." only if `validate_stat` returns `true` in a future run.
-
-## TxLINE endpoints used
+## TxLINE Endpoints Used
 
 - `POST /auth/guest/start`
 - `POST /api/token/activate`
@@ -49,16 +68,8 @@ program/root." only if `validate_stat` returns `true` in a future run.
 - On-chain program `6pW64gN1s2uqjHkn1unFeEjAwJkPGHoppGvS715wyP2J`
   (devnet), instructions `subscribe` and `validate_stat`
 
-Known working test candidate: fixtureId `17588309` (Egypt vs Iran),
-seq `1141`, statKey `1002`.
+## Feedback on the TxLINE API Experience
 
-## Feedback on the TxLINE API experience
-
-- The on-chain validation example in the docs (`validate_stat` via
-  `.view()`) does not currently produce a passing result against a
-  real World Cup fixture for us; we could not find a versioned API
-  reference page for the `stat-validation` endpoint, only an inline
-  prose example.
 - The Program Addresses devnet API host (`txline-dev.txodds.com`)
   differs from a host mentioned elsewhere in prose
   (`oracle-dev.txodds.com`), which does not resolve. This caused early
@@ -66,7 +77,7 @@ seq `1141`, statKey `1002`.
 - Everything else — auth, free-tier subscribe, and the data endpoints —
   worked exactly as documented.
 
-## Run locally
+## Run Locally
 
 ```bash
 npm install
@@ -79,14 +90,14 @@ On first run, a throwaway devnet keypair is generated at
 via `solana airdrop 1 <printed-pubkey> --url devnet` if the in-process
 airdrop is rate-limited.
 
-## Build and run as one process (mirrors Cloud Run)
+## Build and Run as One Process (mirrors Cloud Run)
 
 ```bash
 npm run build
 npm start
 ```
 
-## Required environment variables for deployment
+## Required Environment Variables for Deployment
 
 - `TXLINE_API_HOST` — defaults to `https://txline-dev.txodds.com`
 - `TXLINE_API_TOKEN` — optional; skips the on-chain subscribe step if set
