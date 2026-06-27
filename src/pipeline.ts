@@ -27,7 +27,7 @@ import {
   clusterApiUrl,
 } from "@solana/web3.js";
 import * as anchor from "@coral-xyz/anchor";
-const { BN } = anchor;
+import BN from "bn.js";
 import {
   TOKEN_2022_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,

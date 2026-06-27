@@ -1,0 +1,14 @@
+.git
+.gitignore
+.gcloudignore
+
+node_modules/
+dist/
+dist-server/
+*.log
+*.zip
+
+.env
+.txline-api-token
+.txline-last-txsig
+throwaway-devnet-keypair.json
