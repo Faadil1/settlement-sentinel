@@ -1,0 +1,26 @@
+node_modules/
+dist/
+dist-server/
+.env
+.env.local
+*.local
+
+# Devnet throwaway keypair — never commit, even though it holds no real funds
+throwaway-devnet-keypair.json
+.txline-api-token
+
+# OS/editor noise
+.DS_Store
+*.log
+
+# local secrets / runtime
+.env
+.txline-api-token
+.txline-last-txsig
+throwaway-devnet-keypair.json
+server.log
+
+# dependencies / build
+node_modules/
+dist/
+dist-server/
