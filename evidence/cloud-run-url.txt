@@ -1,0 +1,11 @@
+Settlement Sentinel Cloud Run URL:
+https://settlement-sentinel-rsbvp6uwta-nn.a.run.app
+
+Evidence status:
+LIVE / VERIFIED / CONFIRMED
+
+Known verified claim:
+fixtureId=17588309
+seq=1141
+statKey=1002
+match=Egypt vs Iran
