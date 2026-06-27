@@ -24,3 +24,6 @@ server.log
 node_modules/
 dist/
 dist-server/
+
+# local archives
+*.zip
