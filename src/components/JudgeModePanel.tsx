@@ -3,22 +3,22 @@ import React from "react";
 const COLUMNS = [
   {
     heading: "What is real",
-    body: "A live TxLINE proof check against the deployed Solana program/root.",
+    body: "A live TxLINE proof check against the deployed Solana program/root via read-only simulation.",
   },
   {
     heading: "What is not claimed",
-    body: "No betting, no escrow, no funds moved, no transaction broadcast, no guessed stat meaning.",
+    body: "No betting, no escrow, no funds moved, no transaction broadcast, no guessed football stat meaning.",
   },
   {
     heading: "What would fail",
-    body: "If the Merkle proof or on-chain root did not validate, the verdict would not return VERIFIED.",
+    body: "If the Merkle proof or on-chain root did not validate, the receipt status would not return VERIFIED.",
   },
 ];
 
 export default function JudgeModePanel() {
   return (
-    <div style={panelStyle}>
-      <div style={eyebrowStyle}>JUDGE MODE</div>
+    <div style={stripStyle}>
+      <div style={eyebrowStyle}>PROOF DOCKET TRUST APPENDIX</div>
       <div style={gridStyle}>
         {COLUMNS.map((col) => (
           <div key={col.heading}>
@@ -31,18 +31,17 @@ export default function JudgeModePanel() {
   );
 }
 
-const panelStyle: React.CSSProperties = {
-  background: "#161A20",
-  border: "1px solid #2A2F38",
-  borderRadius: 8,
-  padding: 20,
+const stripStyle: React.CSSProperties = {
+  borderTop: "1px solid rgba(200, 194, 182, 0.08)",
+  paddingTop: 18,
 };
 
 const eyebrowStyle: React.CSSProperties = {
-  fontSize: 12,
-  letterSpacing: "0.1em",
-  color: "#7A828E",
-  marginBottom: 16,
+  fontSize: 10,
+  letterSpacing: "0.14em",
+  color: "#B8862D",
+  marginBottom: 14,
+  fontWeight: 700,
 };
 
 const gridStyle: React.CSSProperties = {
@@ -52,14 +51,14 @@ const gridStyle: React.CSSProperties = {
 };
 
 const headingStyle: React.CSSProperties = {
-  fontSize: 13,
-  fontWeight: 600,
-  color: "#E8EAED",
-  marginBottom: 6,
+  fontSize: 12,
+  fontWeight: 700,
+  color: "#C8C2B6",
+  marginBottom: 4,
 };
 
 const bodyStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "#A8AFB8",
-  lineHeight: 1.6,
+  fontSize: 12,
+  color: "#7A756A",
+  lineHeight: 1.5,
 };

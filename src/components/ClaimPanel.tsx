@@ -16,92 +16,115 @@ export default function ClaimPanel({
   errorMsg: string | null;
 }) {
   return (
-    <div style={panelStyle}>
-      <div style={eyebrowStyle}>THE DISPUTED CLAIM</div>
+    <div style={{ display: "flex", flexDirection: "column" }}>
+      {/* Manila Folder Tab */}
+      <div style={folderTabStyle}>CASE FILE</div>
+      
+      <div style={caseBriefBodyStyle}>
+        <div style={eyebrowStyle}>THE DISPUTED CLAIM</div>
 
-      <div style={{ marginBottom: 18 }}>
-        <div style={fieldLabelStyle}>Fixture</div>
-        <div style={fieldValueStyle}>{KNOWN_WORKING_CANDIDATE.match}</div>
-      </div>
-
-      <div style={{ marginBottom: 22 }}>
-        <div style={fieldLabelStyle}>Claim</div>
-        <div style={fieldValueStyle}>
-          statKey {KNOWN_WORKING_CANDIDATE.statKey} at seq {KNOWN_WORKING_CANDIDATE.seq}
+        <div style={{ marginBottom: 16 }}>
+          <div style={fieldLabelStyle}>Fixture</div>
+          <div style={fieldValueStyle}>{KNOWN_WORKING_CANDIDATE.match}</div>
         </div>
-      </div>
 
-      <h2 style={questionStyle}>Did this disputed stat condition verify?</h2>
-
-      <button onClick={onCheckProof} disabled={isLoading} style={buttonStyle(isLoading)}>
-        {isLoading ? "Checking the proof…" : "Check the proof"}
-      </button>
-
-      {errorMsg && (
-        <div style={{ color: "#E0A04A", fontSize: 13, marginTop: 10 }}>
-          Request failed: {errorMsg}
+        <div style={{ marginBottom: 20 }}>
+          <div style={fieldLabelStyle}>Disputed Stat</div>
+          <div style={fieldValueStyle}>
+            statKey {KNOWN_WORKING_CANDIDATE.statKey} at seq {KNOWN_WORKING_CANDIDATE.seq}
+          </div>
         </div>
-      )}
 
-      <div style={safetyLineStyle}>
-        Read-only check. No wallet, no gas, no transaction broadcast.
+        <h2 style={questionStyle}>Did this disputed stat condition verify?</h2>
+
+        <button onClick={onCheckProof} disabled={isLoading} style={buttonStyle(isLoading)}>
+          {isLoading ? "Checking the proof…" : "Check the proof"}
+        </button>
+
+        {errorMsg && (
+          <div style={{ color: "#8E3D2A", fontSize: 13, marginTop: 10, lineHeight: 1.4, fontWeight: 500 }}>
+            {errorMsg}
+          </div>
+        )}
+
+        <div style={safetyLineStyle}>
+          Read-only check. No wallet, no gas, no transaction broadcast.
+        </div>
       </div>
     </div>
   );
 }
 
-const panelStyle: React.CSSProperties = {
-  background: "#161A20",
-  border: "1px solid #2A2F38",
-  borderRadius: 8,
-  padding: 24,
-  height: "100%",
+const folderTabStyle: React.CSSProperties = {
+  display: "inline-block",
+  alignSelf: "flex-start",
+  background: "#E5DCCB",
+  color: "#4A4035",
+  padding: "5px 14px",
+  borderRadius: "5px 5px 0 0",
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: "0.12em",
+  borderBottom: "none",
+};
+
+const caseBriefBodyStyle: React.CSSProperties = {
+  background: "#E5DCCB",
+  borderRadius: "0 6px 6px 6px",
+  padding: 20,
+  color: "#2C251C",
+  boxShadow: "0 2px 10px rgba(0, 0, 0, 0.15)",
 };
 
 const eyebrowStyle: React.CSSProperties = {
-  fontSize: 12,
-  letterSpacing: "0.1em",
-  color: "#7A828E",
-  marginBottom: 18,
+  fontSize: 10,
+  letterSpacing: "0.14em",
+  color: "#B8862D",
+  marginBottom: 16,
+  fontWeight: 700,
 };
 
 const fieldLabelStyle: React.CSSProperties = {
-  fontSize: 11,
+  fontSize: 10,
   letterSpacing: "0.06em",
-  color: "#7A828E",
-  marginBottom: 4,
+  color: "#7A7062",
+  marginBottom: 3,
+  textTransform: "uppercase" as const,
+  fontWeight: 600,
 };
 
 const fieldValueStyle: React.CSSProperties = {
-  fontSize: 16,
-  fontWeight: 600,
-  color: "#E8EAED",
+  fontSize: 15,
+  fontWeight: 700,
+  color: "#2C251C",
 };
 
 const questionStyle: React.CSSProperties = {
-  fontSize: 22,
+  fontSize: 17,
   fontWeight: 700,
-  color: "#E8EAED",
-  margin: "0 0 20px 0",
+  color: "#2C251C",
+  margin: "0 0 16px 0",
   lineHeight: 1.4,
 };
 
 function buttonStyle(disabled: boolean): React.CSSProperties {
   return {
-    background: disabled ? "#2A2F38" : "#3D6BFF",
-    color: "#fff",
+    background: disabled ? "#C5BCA9" : "#3D6B3D",
+    color: disabled ? "#7A7062" : "#F5F1E8",
     border: "none",
-    borderRadius: 6,
+    borderRadius: 4,
     padding: "10px 18px",
-    fontSize: 14,
-    fontWeight: 600,
+    fontSize: 13,
+    fontWeight: 700,
     cursor: disabled ? "default" : "pointer",
+    letterSpacing: "0.02em",
+    boxShadow: disabled ? "none" : "0 2px 4px rgba(0, 0, 0, 0.1)",
   };
 }
 
 const safetyLineStyle: React.CSSProperties = {
-  fontSize: 12,
-  color: "#5A6472",
-  marginTop: 16,
-  lineHeight: 1.5,
+  fontSize: 11,
+  color: "#6B5E4E",
+  marginTop: 14,
+  lineHeight: 1.4,
 };
