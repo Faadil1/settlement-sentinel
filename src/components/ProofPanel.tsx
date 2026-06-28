@@ -1,5 +1,4 @@
 import React from "react";
-import StatusBadge from "./StatusBadge";
 import VerdictReceipt from "./VerdictReceipt";
 import PipelineTracker from "./PipelineTracker";
 import EvidenceDrawer from "./EvidenceDrawer";
@@ -13,56 +12,54 @@ const KNOWN_WORKING_CANDIDATE = {
 export default function ProofPanel({
   result,
   isLoading,
+  isUnavailable,
 }: {
   result: RunClaimResponse | null;
   isLoading: boolean;
+  isUnavailable?: boolean;
 }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-      <div style={panelStyle}>
-        <div style={eyebrowStyle}>THE TXLINE PROOF PATH</div>
+      {/* The main verdict receipt — the hero element */}
+      <VerdictReceipt
+        result={result}
+        isUnavailable={isUnavailable}
+        statKey={KNOWN_WORKING_CANDIDATE.statKey}
+        seq={KNOWN_WORKING_CANDIDATE.seq}
+      />
 
-        {result && (
-          <div style={{ marginBottom: 16 }}>
-            <StatusBadge status={result.finalStatus} />
-          </div>
-        )}
-
-        <div style={whyTxlineStyle}>
-          The verdict is not produced by Settlement Sentinel's opinion.
-          It comes from TxLINE's Merkle proof and deployed Solana
-          program/root.
+      {/* Resolution timeline — wrapped in collapsible details, auto-opened only when a real result exists */}
+      <details open={!!result} style={detailsStyle}>
+        <summary style={summaryStyle}>
+          RESOLUTION TIMELINE {result ? "— TxLINE PROOF PATH" : ""}
+        </summary>
+        <div style={{ paddingTop: 12 }}>
+          <PipelineTracker
+            steps={result?.steps ?? []}
+            isLoading={isLoading}
+            isUnavailable={isUnavailable}
+          />
         </div>
-      </div>
+      </details>
 
-      <VerdictReceipt result={result} statKey={KNOWN_WORKING_CANDIDATE.statKey} seq={KNOWN_WORKING_CANDIDATE.seq} />
-
-      <div style={panelStyle}>
-        <div style={eyebrowStyle}>RESOLUTION TIMELINE</div>
-        <PipelineTracker steps={result?.steps ?? []} isLoading={isLoading} />
-      </div>
-
-      <EvidenceDrawer result={result} />
+      {/* Audit evidence drawer */}
+      <EvidenceDrawer result={result} isUnavailable={isUnavailable} />
     </div>
   );
 }
 
-const panelStyle: React.CSSProperties = {
-  background: "#161A20",
-  border: "1px solid #2A2F38",
-  borderRadius: 8,
-  padding: 20,
+const detailsStyle: React.CSSProperties = {
+  borderTop: "1px solid rgba(200, 194, 182, 0.08)",
+  paddingTop: 14,
 };
 
-const eyebrowStyle: React.CSSProperties = {
-  fontSize: 12,
-  letterSpacing: "0.1em",
-  color: "#7A828E",
-  marginBottom: 14,
-};
-
-const whyTxlineStyle: React.CSSProperties = {
-  fontSize: 13,
-  color: "#A8AFB8",
-  lineHeight: 1.6,
+const summaryStyle: React.CSSProperties = {
+  fontSize: 10,
+  letterSpacing: "0.12em",
+  color: "#7A756A",
+  fontWeight: 600,
+  cursor: "pointer",
+  outline: "none",
+  userSelect: "none",
+  textTransform: "uppercase",
 };
