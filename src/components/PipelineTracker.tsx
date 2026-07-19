@@ -84,7 +84,7 @@ export default function PipelineTracker({
               {idx + 1}
             </span>
             <span style={{ fontSize: 13, color: "#C8C2B6", fontWeight: 500 }}>
-              {RESOLUTION_TIMELINE_LABELS[id]}
+              {step?.label || RESOLUTION_TIMELINE_LABELS[id]}
             </span>
             {step && (
               <span style={{ fontSize: 11, color: "#524E48", marginLeft: "auto", fontFamily: "ui-monospace, monospace" }}>
