@@ -11,25 +11,45 @@ const STAGE_ORDER = [
   "final_validation",
 ] as const;
 
-function iconFor(step: StepResult | undefined, isPending: boolean) {
-  if (isPending) return "○";
-  if (!step) return "○";
+const RESOLUTION_TIMELINE_LABELS: Record<(typeof STAGE_ORDER)[number], string> = {
+  market_condition_selected: "Claim selected",
+  fixture_loaded: "Match record loaded",
+  score_snapshot_loaded: "Score state loaded",
+  stat_validation_payload_retrieved: "Merkle proof received",
+  txline_program_reached: "TxLINE program reached",
+  onchain_root_found: "On-chain root found",
+  final_validation: "Verdict returned",
+};
+
+function iconFor(step: StepResult | undefined, isPending: boolean): string {
+  if (isPending) return "·";
+  if (!step) return "·";
   return step.ok ? "✓" : "✕";
 }
 
-function colorFor(step: StepResult | undefined, isPending: boolean) {
-  if (isPending) return "#5A6472";
-  if (!step) return "#5A6472";
-  return step.ok ? "#3D9970" : "#C77B1E"; // green for ok, amber (not red) for a real-but-failed step
+function colorFor(step: StepResult | undefined, isPending: boolean): string {
+  if (isPending) return "#524E48";
+  if (!step) return "#524E48";
+  return step.ok ? "#3D6B3D" : "#A05A2C";
 }
 
 export default function PipelineTracker({
   steps,
   isLoading,
+  isUnavailable,
 }: {
   steps: StepResult[];
   isLoading: boolean;
+  isUnavailable?: boolean;
 }) {
+  if (isUnavailable) {
+    return (
+      <div style={{ color: "#7A756A", fontSize: 13, fontStyle: "italic", padding: "4px 0" }}>
+        Proof check unavailable (local preview).
+      </div>
+    );
+  }
+
   const byId = new Map(steps.map((s) => [s.id, s]));
 
   return (
@@ -37,70 +57,43 @@ export default function PipelineTracker({
       {STAGE_ORDER.map((id, idx) => {
         const step = byId.get(id);
         const isPending = isLoading && !step;
+        const stepColor = colorFor(step, isPending);
         return (
           <li
             key={id}
             style={{
               display: "flex",
-              alignItems: "flex-start",
-              gap: 14,
-              padding: "14px 0",
-              borderBottom: idx < STAGE_ORDER.length - 1 ? "1px solid #2A2F38" : "none",
+              alignItems: "baseline",
+              gap: 10,
+              padding: "4px 0",
             }}
           >
-            <div
-              aria-hidden
+            <span
               style={{
-                width: 28,
-                height: 28,
-                borderRadius: "50%",
-                border: `2px solid ${colorFor(step, isPending)}`,
-                color: colorFor(step, isPending),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 14,
+                width: 14,
+                textAlign: "center",
+                fontSize: 12,
                 fontWeight: 700,
+                color: stepColor,
                 flexShrink: 0,
               }}
             >
               {iconFor(step, isPending)}
-            </div>
-            <div style={{ flex: 1 }}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                <span style={{ fontSize: 11, letterSpacing: "0.08em", color: "#7A828E" }}>
-                  STAGE {idx + 1} OF {STAGE_ORDER.length}
-                </span>
-                {step && (
-                  <span
-                    style={{
-                      fontSize: 10,
-                      letterSpacing: "0.06em",
-                      color: "#7A828E",
-                      fontFamily: "ui-monospace, monospace",
-                    }}
-                  >
-                    {step.evidenceLabel}
-                  </span>
-                )}
-              </div>
-              <div style={{ fontSize: 16, fontWeight: 600, marginTop: 2, color: "#E8EAED" }}>
-                {step?.label ?? formatLabel(id)}
-              </div>
-              <div style={{ fontSize: 13, color: "#A8AFB8", marginTop: 2 }}>
-                {isPending ? "Waiting…" : step?.detail ?? "Not yet attempted"}
-              </div>
-            </div>
+            </span>
+            <span style={{ fontSize: 11, color: "#524E48", fontWeight: 500, width: 14, flexShrink: 0 }}>
+              {idx + 1}
+            </span>
+            <span style={{ fontSize: 13, color: "#C8C2B6", fontWeight: 500 }}>
+              {step?.label || RESOLUTION_TIMELINE_LABELS[id]}
+            </span>
+            {step && (
+              <span style={{ fontSize: 11, color: "#524E48", marginLeft: "auto", fontFamily: "ui-monospace, monospace" }}>
+                {step.evidenceLabel}
+              </span>
+            )}
           </li>
         );
       })}
     </ol>
   );
-}
-
-function formatLabel(id: string): string {
-  return id
-    .split("_")
-    .map((w) => w[0].toUpperCase() + w.slice(1))
-    .join(" ");
 }

@@ -323,13 +323,13 @@ async function stagesProgramRootAndFinalValidation(
       const sim: any = await methodBuilder.simulate();
       logs = sim?.raw || [];
       programReached = logs.some((l) => l.includes("Instruction: ValidateStat"));
-      rootFound = logs.some((l) => l.toLowerCase().includes("found valid on-chain root"));
+      rootFound = logs.some((l) => l.toLowerCase().includes("found valid on-chain root") || l.toLowerCase().includes("find valid on-chain root"));
       finalBool = true; // simulate() did not throw => instruction succeeded => true
     } catch (simErr: any) {
       const errLogs: string[] = simErr?.simulationResponse?.logs || simErr?.logs || [];
       logs = errLogs.length ? errLogs : logs;
       programReached = logs.some((l) => l.includes("Instruction: ValidateStat"));
-      rootFound = logs.some((l) => l.toLowerCase().includes("found valid on-chain root"));
+      rootFound = logs.some((l) => l.toLowerCase().includes("found valid on-chain root") || l.toLowerCase().includes("find valid on-chain root"));
       validationError = simErr?.message || String(simErr);
       finalBool = false;
     }
@@ -346,17 +346,39 @@ async function stagesProgramRootAndFinalValidation(
       programLogs: logs,
     };
 
-    const stageRootFound: StepResult = {
-      id: "onchain_root_found",
-      label: "On-chain root found",
-      ok: rootFound,
-      detail: rootFound
-        ? "Program located a valid on-chain Merkle root for the relevant interval"
-        : "No matching on-chain root was reported by the program",
-      evidenceLabel: rootFound ? "LIVE" : "UNKNOWN",
-      claimStrength: rootFound ? "DEMONSTRATED" : "UNSUPPORTED",
-      programLogs: logs,
-    };
+    const hasFindRoot = logs.some((l) => l.toLowerCase().includes("find valid on-chain root") || l.toLowerCase().includes("found valid on-chain root"));
+    const hasPredicateTrue = logs.some((l) => l.toLowerCase().includes("evaluate predicate to: true") || l.toLowerCase().includes("predicate evaluated to: true"));
+    const hasProgramSuccess =
+      finalBool === true &&
+      logs.some((l) => l.toLowerCase().includes("program return:")) &&
+      logs.some((l) => {
+        const normalized = l.toLowerCase();
+        return (
+          normalized.includes("success") &&
+          !normalized.includes("computebudget111")
+        );
+      });
+    const rootSuccess = hasFindRoot && hasPredicateTrue && hasProgramSuccess;
+
+    const stageRootFound: StepResult = rootSuccess
+      ? {
+          id: "onchain_root_found",
+          label: "On-chain root resolution",
+          ok: true,
+          detail: "The TxLINE program resolved a valid root for the validation interval. No standalone root identifier was emitted in the simulation logs.",
+          evidenceLabel: "LIVE",
+          claimStrength: "DEMONSTRATED",
+          programLogs: logs,
+        }
+      : {
+          id: "onchain_root_found",
+          label: "On-chain root found",
+          ok: false,
+          detail: "No matching on-chain root was reported by the program",
+          evidenceLabel: "UNKNOWN",
+          claimStrength: "UNSUPPORTED",
+          programLogs: logs,
+        };
 
     const stageFinal: StepResult = {
       id: "final_validation",
