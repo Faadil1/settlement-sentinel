@@ -1,51 +1,11 @@
-import React from "react";
-import type { FinalStatus } from "../types";
-
-const CONFIG: Record<FinalStatus, { label: string; bg: string; fg: string; description: string }> = {
-  VERIFIED: {
-    label: "VERIFIED",
-    bg: "#1B4332",
-    fg: "#D8F3DC",
-    description: "validate_stat returned true against the live on-chain root.",
-  },
-  PROOF_MISMATCH: {
-    label: "PROOF_MISMATCH",
-    bg: "#7C5800",
-    fg: "#FFE9B0",
-    description:
-      "The program was reached and a valid root was found, but the submitted proof did not match it (error 6004 — InvalidMainTreeProof).",
-  },
-  SPONSOR_CLARIFICATION_PENDING: {
-    label: "SPONSOR_CLARIFICATION_PENDING",
-    bg: "#22324A",
-    fg: "#CBD9EE",
-    description: "Waiting on a known-good example from TxLINE support before this can be diagnosed further.",
-  },
-  ERROR: {
-    label: "ERROR",
-    bg: "#4A2222",
-    fg: "#F3D3D3",
-    description: "The pipeline did not complete due to an unexpected failure.",
-  },
+﻿import type { FinalStatus } from "../types";
+const COPY: Record<FinalStatus, string> = {
+  VERIFIED: "TxLINE Merkle proof validated against the on-chain program/root.",
+  PROOF_MISMATCH: "The program was reached and a valid root was found, but the submitted proof did not match it (error 6004 — InvalidMainTreeProof).",
+  SPONSOR_CLARIFICATION_PENDING: "Waiting on a known-good example from TxLINE support before this can be diagnosed further.",
+  ERROR: "The pipeline did not complete due to an unexpected failure.",
 };
-
-export default function StatusBadge({ status }: { status: FinalStatus }) {
-  const cfg = CONFIG[status];
-  return (
-    <div
-      style={{
-        borderRadius: 8,
-        padding: "16px 20px",
-        background: cfg.bg,
-        color: cfg.fg,
-        fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace",
-      }}
-    >
-      <div style={{ fontSize: 13, letterSpacing: "0.08em", opacity: 0.75, marginBottom: 6 }}>
-        FINAL STATUS
-      </div>
-      <div style={{ fontSize: 22, fontWeight: 600, marginBottom: 8 }}>{cfg.label}</div>
-      <div style={{ fontSize: 14, lineHeight: 1.5, opacity: 0.9 }}>{cfg.description}</div>
-    </div>
-  );
+export default function StatusBadge({ status, isLoading, statement }: { status: FinalStatus | null; isLoading: boolean; statement?: string }) {
+  if (!status) return <div className={`verdict verdict-idle ${isLoading ? "verdict-loading" : ""}`}><p className="verdict-kicker">{isLoading ? "Evidence in motion" : "Awaiting verification"}</p><p className="verdict-idle-copy">{isLoading ? "Following the proof current…" : "The verdict will emerge here."}</p></div>;
+  return <div className={`verdict verdict-${status.toLowerCase()}`}><p className="verdict-kicker">Final verdict</p><h2>{status}</h2><p className="verdict-statement">{statement || COPY[status]}</p>{status === "VERIFIED" && <ul className="verdict-facts"><li>validate_stat returned true</li><li>Read-only Solana simulation</li></ul>}</div>;
 }
