@@ -1,120 +1,37 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import PipelineTracker from "./components/PipelineTracker";
 import StatusBadge from "./components/StatusBadge";
 import EvidenceDrawer from "./components/EvidenceDrawer";
 import type { RunClaimResponse } from "./types";
 
-const KNOWN_WORKING_CANDIDATE = {
-  fixtureId: 17588309,
-  match: "Egypt vs Iran",
-  seq: 1141,
-  statKey: 1002,
-};
+const CLAIM = { fixtureId: 17588309, match: "Egypt vs Iran", seq: 1141, statKey: 1002 };
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
 export default function App() {
   const [result, setResult] = useState<RunClaimResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-
   async function handleRunClaim() {
-    setIsLoading(true);
-    setErrorMsg(null);
-    setResult(null);
+    setIsLoading(true); setErrorMsg(null); setResult(null);
     try {
-      const res = await fetch("/api/run-claim", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(KNOWN_WORKING_CANDIDATE),
-      });
-      const data: RunClaimResponse = await res.json();
-      setResult(data);
-    } catch (e: any) {
-      setErrorMsg(e?.message || "Request failed");
-    } finally {
-      setIsLoading(false);
-    }
+      const res = await fetch(`${API_BASE_URL}/api/run-claim`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(CLAIM) });
+      setResult(await res.json());
+    } catch (e: any) { setErrorMsg(e?.message || "Request failed"); } finally { setIsLoading(false); }
   }
-
-  return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#0D0F13",
-        color: "#E8EAED",
-        fontFamily: "Inter, -apple-system, BlinkMacSystemFont, sans-serif",
-        padding: "32px 24px 64px",
-      }}
-    >
-      <div style={{ maxWidth: 880, margin: "0 auto" }}>
-        <header style={{ marginBottom: 32 }}>
-          <div style={{ fontSize: 12, letterSpacing: "0.1em", color: "#7A828E", marginBottom: 6 }}>
-            SETTLEMENT SENTINEL
-          </div>
-          <h1 style={{ fontSize: 28, fontWeight: 700, margin: 0 }}>
-            World Cup market resolution cockpit
-          </h1>
-          <p style={{ fontSize: 15, color: "#A8AFB8", marginTop: 8, lineHeight: 1.6 }}>
-            Submits a disputed stat claim and runs it live through TxLINE's
-            devnet API and Solana program. Every stage below is real — this
-            page never fabricates a result it has not actually attempted.
-          </p>
-        </header>
-
-        <div style={{ marginBottom: 24 }}>
-          <div style={{ fontSize: 13, color: "#A8AFB8", marginBottom: 10 }}>
-            Claim under test: <strong style={{ color: "#E8EAED" }}>{KNOWN_WORKING_CANDIDATE.match}</strong>{" "}
-            — stat {KNOWN_WORKING_CANDIDATE.statKey}, sequence {KNOWN_WORKING_CANDIDATE.seq}
-          </div>
-          <button onClick={handleRunClaim} disabled={isLoading} style={buttonStyle(isLoading)}>
-            {isLoading ? "Running pipeline…" : "Run claim through TxLINE"}
-          </button>
-          {errorMsg && (
-            <div style={{ color: "#E0A04A", fontSize: 13, marginTop: 10 }}>
-              Request failed: {errorMsg}
-            </div>
-          )}
+  return <main className={`instrument ${isLoading ? "is-running" : ""} ${result ? "has-result" : ""}`}>
+    <div className="atmosphere" aria-hidden="true" /><div className="shell">
+      <header className="masthead"><a className="identity" href="#top" aria-label="Settlement Sentinel home"><span className="identity-mark" aria-hidden="true"><i /><i /><i /></span><span>Settlement Sentinel</span></a><p>Live evidence for claims resolved through TxLINE.</p></header>
+      <section className="hero" id="top" aria-labelledby="claim-title">
+        <div className="claim-block"><div className="eyebrow"><span /> Live claim</div><h1 id="claim-title">Egypt <em>vs</em> Iran</h1>
+          <dl className="claim-meta" aria-label="Claim identifiers"><div><dt>fixtureId</dt><dd>17588309</dd></div><div><dt>seq</dt><dd>1141</dd></div><div><dt>statKey</dt><dd>1002</dd></div></dl>
+          <button className="verify-button" type="button" onClick={handleRunClaim} disabled={isLoading}><span>{isLoading ? "Verifying live claim" : "Verify Live Claim"}</span><svg viewBox="0 0 28 12" aria-hidden="true"><path d="M1 6h24M20 1l5 5-5 5" /></svg></button>
+          <p className="simulation-note">Read-only Solana simulation</p>{errorMsg && <p className="request-error" role="alert">Request failed: {errorMsg}</p>}
         </div>
-
-        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
-          <section style={panelStyle}>
-            <div style={{ fontSize: 12, letterSpacing: "0.1em", color: "#7A828E", marginBottom: 14 }}>
-              PIPELINE
-            </div>
-            <PipelineTracker steps={result?.steps ?? []} isLoading={isLoading} />
-          </section>
-
-          {result && <StatusBadge status={result.finalStatus} />}
-
-          <EvidenceDrawer result={result} />
-        </div>
-
-        <footer style={{ marginTop: 40, fontSize: 12, color: "#5A6472", lineHeight: 1.6 }}>
-          No escrow, wagering, or fund movement occurs anywhere in this product.
-          validate_stat is called as a read-only simulated check only — never
-          a broadcast transaction. This cockpit requires no wallet connection
-          and no gas from anyone viewing it.
-        </footer>
-      </div>
+        <div className="verdict-region" aria-live="polite" aria-busy={isLoading}><div className="current-lines" aria-hidden="true"><svg viewBox="0 0 700 360" preserveAspectRatio="none"><path className="current current-a" d="M-30 94C105 68 148 166 278 151S463 52 730 82" /><path className="current current-b" d="M-30 126C119 105 173 207 306 183S481 87 730 115" /><path className="current current-c" d="M-30 158C108 150 202 232 338 204S514 129 730 143" /></svg></div><StatusBadge status={result?.finalStatus ?? null} isLoading={isLoading} statement={result?.truthfulProofStatement} /></div>
+      </section>
+      <section className="proof-section" aria-labelledby="proof-heading"><div className="section-intro"><p className="eyebrow">Proof journey</p><h2 id="proof-heading">Truth emerges through evidence.</h2></div><PipelineTracker steps={result?.steps ?? []} isLoading={isLoading} /></section>
+      <EvidenceDrawer result={result} />
+      <footer><span>Settlement Sentinel</span><p>No escrow, wagering, or fund movement occurs anywhere in this product. validate_stat is called as a read-only simulated check only — never a broadcast transaction. This instrument requires no wallet connection and no gas from anyone viewing it.</p></footer>
     </div>
-  );
+  </main>;
 }
-
-function buttonStyle(disabled: boolean): React.CSSProperties {
-  return {
-    background: disabled ? "#2A2F38" : "#3D6BFF",
-    color: "#fff",
-    border: "none",
-    borderRadius: 6,
-    padding: "10px 18px",
-    fontSize: 14,
-    fontWeight: 600,
-    cursor: disabled ? "default" : "pointer",
-  };
-}
-
-const panelStyle: React.CSSProperties = {
-  background: "#161A20",
-  border: "1px solid #2A2F38",
-  borderRadius: 8,
-  padding: 20,
-};
